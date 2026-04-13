@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Zapsell — Configurações</title>
+  <link rel="stylesheet" href="../css/style.css"/>
+</head>
+<body>
+
+<div class="app">
+  <main class="main" id="main" style="display:none">
+    <div class="page-header">
+      <h1 class="page-title">Configurações</h1>
+      <p class="page-subtitle">Personalize sua conta e integrações.</p>
+    </div>
+
+    <div class="settings-grid">
+      <!-- Menu lateral -->
+      <div class="settings-nav">
+        <div class="settings-nav-item active" onclick="mostrarSecao('perfil', this)">👤 Perfil</div>
+        <div class="settings-nav-item" onclick="mostrarSecao('empresa', this)">🏢 Empresa</div>
+        <div class="settings-nav-item" onclick="mostrarSecao('integracao', this)">🔗 Integração</div>
+        <div class="settings-nav-item" onclick="mostrarSecao('senha', this)">🔒 Senha</div>
+      </div>
+
+      <!-- Conteúdo -->
+      <div>
+
+        <!-- PERFIL -->
+        <div class="settings-card" id="sec-perfil">
+          <div class="settings-section-title">Dados do Perfil</div>
+          <div class="form-group">
+            <label>Nome</label>
+            <input id="p-nome" placeholder="Seu nome completo"/>
+          </div>
+          <div class="form-group">
+            <label>E-mail</label>
+            <input id="p-email" type="email" disabled style="opacity:.5;cursor:not-allowed"/>
+          </div>
+          <button class="btn btn-primary" id="btn-perfil" onclick="salvarPerfil()">Salvar perfil</button>
+        </div>
+
+        <!-- EMPRESA -->
+        <div class="settings-card" id="sec-empresa" style="display:none">
+          <div class="settings-section-title">Dados da Empresa</div>
+          <div class="form-group">
+            <label>Nome da empresa</label>
+            <input id="c-empresa" placeholder="Minha Empresa LTDA"/>
+          </div>
+          <div class="form-group" style="display:flex;align-items:center;gap:12px;margin-top:8px">
+            <input type="checkbox" id="c-notif" style="width:18px;height:18px;accent-color:var(--green);flex-shrink:0"/>
+            <label style="margin:0;text-transform:none;font-size:13.5px;font-weight:500;color:var(--text);cursor:pointer" for="c-notif">
+              Receber notificações por e-mail
+            </label>
+          </div>
+          <button class="btn btn-primary" id="btn-empresa" onclick="salvarConfigs()" style="margin-top:20px">Salvar</button>
+        </div>
+
+        <!-- INTEGRAÇÃO -->
+        <div class="settings-card" id="sec-integracao" style="display:none">
+          <div class="settings-section-title">Webhook / Integração</div>
+          <p style="color:var(--muted);font-size:13.5px;margin-bottom:20px">
+            Configure um webhook para receber leads automaticamente de ferramentas como Make, Zapier ou n8n.
+          </p>
+          <div class="form-group">
+            <label>URL do Webhook de entrada</label>
+            <input id="c-webhook" placeholder="https://hook.us1.make.com/..."/>
+          </div>
+          <div style="background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);border-radius:8px;padding:14px;margin-bottom:16px">
+            <div style="font-size:12px;font-weight:700;color:var(--green);margin-bottom:6px">📋 PAYLOAD ESPERADO</div>
+            <pre style="font-size:12px;color:var(--muted);font-family:monospace;white-space:pre-wrap">POST /seu-endpoint
+{
+  "nome": "João Silva",
+  "telefone": "41999998888",
+  "email": "joao@email.com",
+  "origem": "whatsapp"
+}</pre>
+          </div>
+          <button class="btn btn-primary" id="btn-webhook" onclick="salvarConfigs()">Salvar webhook</button>
+        </div>
+
+        <!-- SENHA -->
+        <div class="settings-card" id="sec-senha" style="display:none">
+          <div class="settings-section-title">Alterar Senha</div>
+          <div class="form-group">
+            <label>Nova senha</label>
+            <input id="nova-senha" type="password" placeholder="Mínimo 6 caracteres"/>
+          </div>
+          <div class="form-group">
+            <label>Confirmar nova senha</label>
+            <input id="conf-senha" type="password" placeholder="Repita a senha"/>
+          </div>
+          <button class="btn btn-primary" id="btn-senha" onclick="alterarSenha()">Alterar senha</button>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/supabase-config.js"></script>
+<script src="../js/utils.js"></script>
+<script src="../js/sidebar.js"></script>
+<script src="../js/vendas-config.js"></script>
+
+<script>
+  renderSidebar('config')
+
+  async function init() {
+    const user = await protegerPagina()
+    if (!user) return
+    await carregarSidebar()
+    document.getElementById('main').style.display = ''
+
+    // Preenche perfil
+    const perfil = await getPerfil()
+    if (perfil) {
+      document.getElementById('p-nome').value  = perfil.nome || ''
+      document.getElementById('p-email').value = perfil.email || user.email
+    } else {
+      document.getElementById('p-email').value = user.email
+    }
+
+    // Preenche configurações — usa maybeSingle para não quebrar se não existir
+    const { data: cfg } = await _sb
+      .from('configuracoes').select('*').eq('user_id', user.id).maybeSingle()
+    if (cfg) {
+      document.getElementById('c-empresa').value = cfg.nome_empresa || ''
+      document.getElementById('c-webhook').value = cfg.webhook_url  || ''
+      document.getElementById('c-notif').checked = !!cfg.notificacoes_email
+    }
+  }
+
+  function mostrarSecao(sec, el) {
+    ;['perfil','empresa','integracao','senha'].forEach(s => {
+      document.getElementById('sec-' + s).style.display = s === sec ? '' : 'none'
+    })
+    document.querySelectorAll('.settings-nav-item').forEach(i => i.classList.remove('active'))
+    el.classList.add('active')
+  }
+
+  async function salvarPerfil() {
+    const nome = document.getElementById('p-nome').value.trim()
+    if (!nome) return toast('Informe seu nome.', 'error')
+    setLoading('btn-perfil', true)
+    try {
+      const user = await getUsuario()
+      // Atualiza metadado do auth + tabela profiles
+      await _sb.auth.updateUser({ data: { nome } })
+      const { error } = await _sb.from('profiles').update({ nome }).eq('id', user.id)
+      if (error) throw error
+      toast('Perfil atualizado!')
+      await carregarSidebar()
+    } catch(e) {
+      toast('Erro: ' + e.message, 'error')
+    } finally {
+      setLoading('btn-perfil', false, 'Salvar perfil')
+    }
+  }
+
+  async function salvarConfigs() {
+    setLoading('btn-empresa', true)
+    setLoading('btn-webhook', true)
+    try {
+      const user = await getUsuario()
+      // upsert: cria se não existe, atualiza se já tem
+      const { error } = await _sb.from('configuracoes').upsert({
+        user_id:            user.id,
+        nome_empresa:       document.getElementById('c-empresa').value.trim(),
+        webhook_url:        document.getElementById('c-webhook').value.trim(),
+        notificacoes_email: document.getElementById('c-notif').checked,
+        updated_at:         new Date().toISOString(),
+      }, { onConflict: 'user_id' })
+      if (error) throw error
+      toast('Configurações salvas!')
+    } catch(e) {
+      toast('Erro: ' + e.message, 'error')
+    } finally {
+      setLoading('btn-empresa', false, 'Salvar')
+      setLoading('btn-webhook', false, 'Salvar webhook')
+    }
+  }
+
+  async function alterarSenha() {
+    const nova = document.getElementById('nova-senha').value
+    const conf = document.getElementById('conf-senha').value
+    if (!nova || nova.length < 6) return toast('Senha deve ter ao menos 6 caracteres.', 'error')
+    if (nova !== conf) return toast('As senhas não coincidem.', 'error')
+    setLoading('btn-senha', true)
+    try {
+      const { error } = await _sb.auth.updateUser({ password: nova })
+      if (error) throw error
+      toast('Senha alterada com sucesso!')
+      document.getElementById('nova-senha').value = ''
+      document.getElementById('conf-senha').value = ''
+    } catch(e) {
+      toast('Erro: ' + e.message, 'error')
+    } finally {
+      setLoading('btn-senha', false, 'Alterar senha')
+    }
+  }
+
+  init()
+</script>
+</body>
+</html>

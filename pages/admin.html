@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>ZapSell — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#080b10;--bg2:#0d1117;--bg3:#131920;--border:#ffffff0d;--border2:#ffffff18;--text:#eef2f8;--text2:#7a8fa8;--text3:#3a4a5c;--green:#00e5a0;--green2:#00b87e;--greenbg:#00e5a010;--amber:#f5a623;--blue:#4f9dff;--purple:#a78bfa;--red:#ff5c5c;--radius:10px;--radius2:14px;--sidebar:220px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:14px;min-height:100vh}
+#loading{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999;flex-direction:column;gap:12px}
+.spin-big{width:32px;height:32px;border:3px solid rgba(0,229,160,.2);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#app{display:none}
+.layout{display:grid;grid-template-columns:var(--sidebar) 1fr;min-height:100vh}
+.sidebar{background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;width:var(--sidebar);z-index:100}
+.sidebar-logo{padding:18px 14px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:9px}
+.logo-icon{width:30px;height:30px;background:var(--red);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo-text{font-family:'Syne',sans-serif;font-size:15px;font-weight:800}
+.logo-text span{color:var(--red)}
+.admin-badge{margin-left:auto;background:rgba(255,92,92,.1);color:var(--red);font-size:9px;padding:2px 7px;border-radius:99px;font-family:'DM Mono',monospace;font-weight:700}
+nav{flex:1;padding:8px;display:flex;flex-direction:column;gap:2px;overflow-y:auto}
+.nav-section{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;padding:10px 10px 4px}
+nav a{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;text-decoration:none;color:var(--text2);font-size:13px;font-weight:500;transition:all .12s;cursor:pointer}
+nav a:hover{color:var(--text);background:rgba(255,255,255,.04)}
+nav a.active{color:var(--text);background:rgba(255,92,92,.08)}
+nav a.active .ni{color:var(--red)}
+.ni{font-size:13px;width:15px;text-align:center;flex-shrink:0}
+.sidebar-footer{padding:8px;border-top:1px solid var(--border)}
+.user-chip{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px}
+.avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--red),var(--purple));display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0}
+.user-name{font-size:12px;font-weight:600}
+.user-plan{font-size:10px;color:var(--red);font-family:'DM Mono',monospace}
+.main{margin-left:var(--sidebar);min-height:100vh;display:flex;flex-direction:column}
+.topbar{display:flex;align-items:center;padding:0 22px;height:52px;border-bottom:1px solid var(--border);background:var(--bg2);position:sticky;top:0;z-index:50;gap:10px}
+.topbar-title{font-size:14px;font-weight:700;flex:1}
+.page-content{padding:22px;flex:1}
+.page{display:none}.page.active{display:block}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.mc{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);padding:16px 18px}
+.mc-label{font-size:11px;color:var(--text2);margin-bottom:5px;font-family:'DM Mono',monospace}
+.mc-val{font-size:22px;font-weight:800;font-family:'Syne',sans-serif;letter-spacing:-.5px}
+.mc-chg{font-size:11px;margin-top:4px}
+.up{color:var(--green)}.dn{color:var(--red)}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);padding:18px;margin-bottom:14px}
+.card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.card-title{font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.06em}
+table{width:100%;border-collapse:collapse}
+th{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;padding:0 10px 8px;text-align:left;border-bottom:1px solid var(--border);font-family:'DM Mono',monospace}
+td{padding:9px 10px;font-size:13px;border-bottom:1px solid var(--border)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.015)}
+.tag{display:inline-flex;align-items:center;padding:2px 9px;border-radius:99px;font-size:10px;font-weight:700;font-family:'DM Mono',monospace}
+.tag-green{background:rgba(0,229,160,.1);color:var(--green)}
+.tag-amber{background:rgba(245,166,35,.1);color:var(--amber)}
+.tag-red{background:rgba(255,92,92,.1);color:var(--red)}
+.tag-blue{background:rgba(79,157,255,.1);color:var(--blue)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--radius);font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border2);background:var(--bg3);color:var(--text);transition:all .15s;font-family:'DM Sans',sans-serif}
+.btn:hover{border-color:var(--border2);background:var(--bg)}
+.btn-red{background:rgba(255,92,92,.1);border-color:rgba(255,92,92,.2);color:var(--red)}
+.btn-red:hover{background:rgba(255,92,92,.2)}
+.btn-green{background:rgba(0,229,160,.1);border-color:rgba(0,229,160,.2);color:var(--green)}
+.btn-green:hover{background:rgba(0,229,160,.2)}
+.input{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);padding:9px 13px;font-size:13px;color:var(--text);outline:none;font-family:'DM Sans',sans-serif;transition:border-color .15s}
+.input:focus{border-color:var(--green)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.stat-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
+.stat-row:last-child{border-bottom:none}
+.chip{font-size:10px;padding:3px 10px;border-radius:20px;font-family:'DM Mono',monospace}
+.chip-green{background:rgba(0,229,160,.1);color:var(--green)}
+.chip-amber{background:rgba(245,166,35,.1);color:var(--amber)}
+.chip-red{background:rgba(255,92,92,.1);color:var(--red)}
+.webhook-row{display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:6px;font-size:12px;font-family:'DM Mono',monospace}
+.method{padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700}
+.post{background:rgba(0,229,160,.12);color:var(--green)}
+.get{background:rgba(79,157,255,.12);color:var(--blue)}
+</style>
+</head>
+<body>
+
+<!-- Loading -->
+<div id="loading">
+  <div class="spin-big"></div>
+  <div style="font-size:13px;color:var(--text2);font-family:'DM Mono',monospace">Verificando acesso...</div>
+</div>
+
+<div id="app">
+<div class="layout">
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      </div>
+      <span class="logo-text">Zap<span>Sell</span></span>
+      <span class="admin-badge">ADMIN</span>
+    </div>
+    <nav>
+      <div class="nav-section">Visão geral</div>
+      <a class="active" onclick="pg('overview',this)"><span class="ni">◻</span>Overview</a>
+      <a onclick="pg('usuarios',this)"><span class="ni">👥</span>Usuários</a>
+      <a onclick="pg('planos',this)"><span class="ni">💳</span>Planos & MRR</a>
+      <div class="nav-section">Sistema</div>
+      <a onclick="pg('integracoes',this)"><span class="ni">🔗</span>Integrações</a>
+      <a onclick="pg('webhooks',this)"><span class="ni">⚡</span>Webhooks</a>
+      <a onclick="pg('config',this)"><span class="ni">⚙️</span>Configurações</a>
+      <div class="nav-section">Links</div>
+      <a href="/dashboard"><span class="ni">←</span>Voltar ao app</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-chip">
+        <div class="avatar">MS</div>
+        <div>
+          <div class="user-name">msddragon</div>
+          <div class="user-plan">admin</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title" id="pg-title">Overview</div>
+      <span class="chip chip-red" style="font-size:11px">● Painel Admin</span>
+      <button class="btn" onclick="logout()">Sair</button>
+    </div>
+
+    <div class="page-content">
+
+      <!-- OVERVIEW -->
+      <div class="page active" id="pg-overview">
+        <div class="metrics">
+          <div class="mc"><div class="mc-label">USUÁRIOS TOTAL</div><div class="mc-val" id="a-users">—</div><div class="mc-chg up" id="a-users-c">carregando...</div></div>
+          <div class="mc"><div class="mc-label">PLANOS PRO</div><div class="mc-val" id="a-pro">—</div><div class="mc-chg up">ativos</div></div>
+          <div class="mc"><div class="mc-label">MRR</div><div class="mc-val" id="a-mrr">—</div><div class="mc-chg up">recorrente</div></div>
+          <div class="mc"><div class="mc-label">MSGS HOJE</div><div class="mc-val" id="a-msgs">—</div><div class="mc-chg" style="color:var(--text2)">via WhatsApp</div></div>
+        </div>
+        <div class="grid2">
+          <div class="card">
+            <div class="card-head"><span class="card-title">Usuários recentes</span></div>
+            <div id="a-recent-users"><div style="color:var(--text2);font-size:13px">Carregando...</div></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><span class="card-title">Status das integrações</span></div>
+            <div class="stat-row"><span>Cakto Webhook</span><span class="chip chip-green">Ativo</span></div>
+            <div class="stat-row"><span>Kiwify Webhook</span><span class="chip chip-green">Ativo</span></div>
+            <div class="stat-row"><span>UTMify</span><span class="chip chip-green">Ativo</span></div>
+            <div class="stat-row"><span>Evolution API</span><span class="chip chip-green">Online</span></div>
+            <div class="stat-row"><span>Hotmart</span><span class="chip chip-amber">Pendente</span></div>
+            <div class="stat-row"><span>Supabase DB</span><span class="chip chip-green">Online</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- USUÁRIOS -->
+      <div class="page" id="pg-usuarios">
+        <div class="card">
+          <div class="card-head">
+            <span class="card-title">Todos os usuários</span>
+            <div style="display:flex;gap:8px">
+              <input class="input" placeholder="Buscar e-mail..." id="user-search" oninput="filtrarUsers()" style="width:200px"/>
+              <button class="btn btn-green" onclick="exportUsers()">Exportar CSV</button>
+            </div>
+          </div>
+          <table>
+            <thead><tr><th>Nome</th><th>E-mail</th><th>Plano</th><th>Origem</th><th>Cadastro</th><th>Ações</th></tr></thead>
+            <tbody id="users-tbody">
+              <tr><td colspan="6" style="color:var(--text2);text-align:center;padding:20px">Carregando usuários...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- PLANOS -->
+      <div class="page" id="pg-planos">
+        <div class="metrics">
+          <div class="mc"><div class="mc-label">PLANO FREE</div><div class="mc-val" style="color:var(--text2)" id="cnt-free">—</div><div class="mc-chg" style="color:var(--text2)">usuários</div></div>
+          <div class="mc"><div class="mc-label">PLANO PRO</div><div class="mc-val" style="color:var(--green)" id="cnt-pro">—</div><div class="mc-chg up">R$97/mês cada</div></div>
+          <div class="mc"><div class="mc-label">PLANO BUSINESS</div><div class="mc-val" style="color:var(--blue)" id="cnt-biz">—</div><div class="mc-chg" style="color:var(--blue)">R$247/mês cada</div></div>
+          <div class="mc"><div class="mc-label">MRR TOTAL</div><div class="mc-val" style="color:var(--amber)" id="mrr-total">—</div><div class="mc-chg up">recorrente</div></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><span class="card-title">Distribuição de planos</span></div>
+          <div id="planos-chart" style="display:flex;flex-direction:column;gap:10px;padding:8px 0"></div>
+        </div>
+      </div>
+
+      <!-- INTEGRAÇÕES -->
+      <div class="page" id="pg-integracoes">
+        <div class="grid2">
+          <div class="card">
+            <div class="card-head"><span class="card-title">Plataformas conectadas</span></div>
+            <div class="stat-row"><span style="display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0"></span>Cakto</span><span class="chip chip-green">Webhook ativo</span></div>
+            <div class="stat-row"><span style="display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0"></span>Kiwify</span><span class="chip chip-green">Webhook ativo</span></div>
+            <div class="stat-row"><span style="display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0"></span>UTMify</span><span class="chip chip-green">Conectado</span></div>
+            <div class="stat-row"><span style="display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;border-radius:50%;background:var(--amber);flex-shrink:0"></span>Hotmart</span><span class="chip chip-amber">Pendente</span></div>
+            <div class="stat-row"><span style="display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;border-radius:50%;background:var(--text3);flex-shrink:0"></span>Eduzz</span><span class="chip chip-red">Desconectado</span></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><span class="card-title">Últimos eventos</span></div>
+            <div class="stat-row"><span>Kiwify · purchase</span><span style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace">hoje 09:14</span></div>
+            <div class="stat-row"><span>UTMify · lead</span><span style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace">hoje 08:52</span></div>
+            <div class="stat-row"><span>Cakto · purchase</span><span style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace">hoje 08:30</span></div>
+            <div class="stat-row"><span>Hotmart · refund</span><span style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace">ontem</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- WEBHOOKS -->
+      <div class="page" id="pg-webhooks">
+        <div class="grid2">
+          <div class="card">
+            <div class="card-head"><span class="card-title">Endpoints disponíveis</span></div>
+            <div class="webhook-row"><span class="method post">POST</span><span style="color:var(--green)">/webhook/cakto</span></div>
+            <div class="webhook-row"><span class="method post">POST</span><span style="color:var(--green)">/webhook/kiwify</span></div>
+            <div class="webhook-row"><span class="method post">POST</span><span style="color:var(--green)">/webhook/hotmart</span></div>
+            <div class="webhook-row"><span class="method post">POST</span><span style="color:var(--green)">/webhook/utmify</span></div>
+            <div class="webhook-row"><span class="method get">GET</span><span style="color:var(--blue)">/api/users</span></div>
+            <div class="webhook-row"><span class="method get">GET</span><span style="color:var(--blue)">/api/stats</span></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><span class="card-title">Fluxo ao receber venda (Cakto)</span></div>
+            <div style="display:flex;flex-direction:column;gap:10px;font-size:13px">
+              <div style="display:flex;gap:10px"><div style="width:20px;height:20px;border-radius:50%;background:rgba(0,229,160,.1);border:1px solid rgba(0,229,160,.3);color:var(--green);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">1</div><div style="color:var(--text2)">Cakto dispara webhook ao confirmar pagamento</div></div>
+              <div style="display:flex;gap:10px"><div style="width:20px;height:20px;border-radius:50%;background:rgba(79,157,255,.1);border:1px solid rgba(79,157,255,.3);color:var(--blue);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">2</div><div style="color:var(--text2)">Backend salva usuário no Supabase com plano e UTM</div></div>
+              <div style="display:flex;gap:10px"><div style="width:20px;height:20px;border-radius:50%;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.3);color:var(--purple);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">3</div><div style="color:var(--text2)">Evolution API envia boas-vindas no WhatsApp</div></div>
+              <div style="display:flex;gap:10px"><div style="width:20px;height:20px;border-radius:50%;background:rgba(245,166,35,.1);border:1px solid rgba(245,166,35,.3);color:var(--amber);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">4</div><div style="color:var(--text2)">Robô IA começa a monitorar e atender o cliente</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONFIG -->
+      <div class="page" id="pg-config">
+        <div class="grid2">
+          <div class="card">
+            <div class="card-head"><span class="card-title">Configurações do produto</span></div>
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <div><div style="font-size:12px;color:var(--text2);margin-bottom:5px">Nome do produto</div><input class="input" value="ZapSell" style="width:100%"/></div>
+              <div><div style="font-size:12px;color:var(--text2);margin-bottom:5px">URL do site</div><input class="input" value="https://zap-sell-murex.vercel.app" style="width:100%"/></div>
+              <div><div style="font-size:12px;color:var(--text2);margin-bottom:5px">WhatsApp suporte</div><input class="input" value="https://wa.me/5541999990000" style="width:100%"/></div>
+              <button class="btn btn-green">Salvar alterações</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head"><span class="card-title">Conta admin</span></div>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div class="stat-row"><span style="color:var(--text2)">Usuário</span><span style="font-family:'DM Mono',monospace">msddragon</span></div>
+              <div class="stat-row"><span style="color:var(--text2)">E-mail</span><span style="font-family:'DM Mono',monospace;font-size:12px">mateusschneider037@gmail.com</span></div>
+              <div class="stat-row"><span style="color:var(--text2)">Perfil</span><span class="chip chip-red">admin</span></div>
+              <button class="btn btn-red" style="margin-top:8px" onclick="logout()">Sair da conta</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+// Admin email autorizado (do config)
+const ADMIN_EMAIL = 'mateusschneider037@gmail.com'
+
+;(function(){
+  var s=document.createElement('script')
+  s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js'
+  s.onload=function(){
+    var c=document.createElement('script');c.src='../js/supabase-config.js'
+    c.onload=async function(){
+      const {data:{session}}=await _sb.auth.getSession()
+      if(!session){window.location.replace('/login');return}
+      const email=session.user.email
+      if(email!==ADMIN_EMAIL){
+        alert('Acesso negado. Apenas administradores podem acessar esta página.')
+        window.location.replace('/dashboard');return
+      }
+      document.getElementById('loading').style.display='none'
+      document.getElementById('app').style.display='block'
+      loadData()
+    }
+    document.head.appendChild(c)
+  }
+  document.head.appendChild(s)
+})()
+
+async function loadData(){
+  try{
+    const [users,leads,vendas]=await Promise.all([
+      _sb.from('profiles').select('*').order('created_at',{ascending:false}),
+      _sb.from('leads').select('user_id'),
+      _sb.from('vendas').select('valor,status')
+    ])
+    const u=users.data||[]
+    const v=vendas.data||[]
+    const pro=u.filter(x=>x.plano==='pro').length
+    const biz=u.filter(x=>x.plano==='business').length
+    const mrr=pro*97+biz*247
+
+    document.getElementById('a-users').textContent=u.length
+    document.getElementById('a-users-c').textContent=u.length+' cadastrados'
+    document.getElementById('a-pro').textContent=pro+biz
+    document.getElementById('a-mrr').textContent='R$'+mrr.toLocaleString('pt-BR')
+    document.getElementById('a-msgs').textContent='—'
+
+    // Planos
+    const free=u.filter(x=>!x.plano||x.plano==='free').length
+    document.getElementById('cnt-free').textContent=free
+    document.getElementById('cnt-pro').textContent=pro
+    document.getElementById('cnt-biz').textContent=biz
+    document.getElementById('mrr-total').textContent='R$'+mrr.toLocaleString('pt-BR')
+
+    const total=u.length||1
+    document.getElementById('planos-chart').innerHTML=[
+      {name:'Free',count:free,color:'var(--text2)'},
+      {name:'Pro',count:pro,color:'var(--green)'},
+      {name:'Business',count:biz,color:'var(--blue)'}
+    ].map(p=>`
+      <div style="display:flex;align-items:center;gap:12px;font-size:13px">
+        <span style="width:70px;color:var(--text2)">${p.name}</span>
+        <div style="flex:1;background:var(--bg3);border-radius:4px;height:8px;overflow:hidden">
+          <div style="width:${Math.round(p.count/total*100)}%;height:100%;background:${p.color};border-radius:4px;transition:width .6s"></div>
+        </div>
+        <span style="width:40px;text-align:right;font-family:'DM Mono',monospace;color:${p.color}">${p.count}</span>
+      </div>`).join('')
+
+    // Users table
+    window._allUsers=u
+    renderUsers(u)
+
+    // Recent users in overview
+    document.getElementById('a-recent-users').innerHTML=u.slice(0,5).map(x=>`
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px">
+        <span>${x.nome||x.email||'—'}</span>
+        <span class="tag ${x.plano==='pro'?'tag-green':x.plano==='business'?'tag-blue':'tag-amber'}">${x.plano||'free'}</span>
+      </div>`).join('')||'<div style="color:var(--text2);font-size:13px">Nenhum usuário ainda.</div>'
+  }catch(e){console.error(e)}
+}
+
+function renderUsers(u){
+  const tbody=document.getElementById('users-tbody')
+  if(!u.length){tbody.innerHTML='<tr><td colspan="6" style="color:var(--text2);text-align:center;padding:20px">Nenhum usuário encontrado.</td></tr>';return}
+  tbody.innerHTML=u.map(x=>`
+    <tr>
+      <td>${x.nome||'—'}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:12px">${x.email||'—'}</td>
+      <td><span class="tag ${x.plano==='pro'?'tag-green':x.plano==='business'?'tag-blue':'tag-amber'}">${x.plano||'free'}</span></td>
+      <td style="color:var(--text2)">${x.source||'direto'}</td>
+      <td style="font-size:12px;color:var(--text2);font-family:'DM Mono',monospace">${x.created_at?new Date(x.created_at).toLocaleDateString('pt-BR'):'—'}</td>
+      <td><button class="btn btn-red" style="padding:4px 10px;font-size:11px" onclick="banUser('${x.id}')">Banir</button></td>
+    </tr>`).join('')
+}
+
+function filtrarUsers(){
+  const q=document.getElementById('user-search').value.toLowerCase()
+  const filtered=(window._allUsers||[]).filter(u=>(u.email||'').toLowerCase().includes(q)||(u.nome||'').toLowerCase().includes(q))
+  renderUsers(filtered)
+}
+
+function exportUsers(){
+  const u=window._allUsers||[]
+  const csv='nome,email,plano,source,created_at\n'+u.map(x=>`${x.nome||''},${x.email||''},${x.plano||'free'},${x.source||''},${x.created_at||''}`).join('\n')
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='zapsell-users.csv';a.click()
+}
+
+function banUser(id){if(confirm('Banir este usuário?')){alert('Usuário banido (implemente a lógica no Supabase).')}}
+
+function pg(name,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'))
+  document.getElementById('pg-'+name).classList.add('active')
+  document.querySelectorAll('nav a').forEach(a=>a.classList.remove('active'))
+  if(el)el.classList.add('active')
+  document.getElementById('pg-title').textContent=el?el.textContent.trim():name
+}
+
+function logout(){_sb.auth.signOut().then(()=>window.location.replace('/login'))}
+</script>
+</body>
+</html>

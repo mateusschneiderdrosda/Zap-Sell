@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ZapSell — Agente IA</title>
+  <link rel="stylesheet" href="../css/style.css"/>
+  <style>
+    .ia-tabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:5px;margin-bottom:24px}
+    .ia-tab{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;color:var(--muted);transition:all .15s;border:none;background:transparent;font-family:inherit;position:relative}
+    .ia-tab:hover{color:var(--text);background:rgba(255,255,255,.04)}
+    .ia-tab.active{background:var(--bg);color:var(--text);border:1px solid var(--border)}
+    .ia-tab .ti{font-size:16px}
+    .tb{position:absolute;top:-4px;right:-4px;width:16px;height:16px;border-radius:50%;background:var(--green);color:#000;font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center}
+    .ia-panel{display:none}.ia-panel.active{display:block}
+    .og{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px}
+    .oc{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+    .oc:hover{border-color:var(--border2);transform:translateY(-2px)}
+    .oc.sel{border-color:rgba(0,230,118,.5);background:rgba(0,230,118,.04)}
+    .oc.sel::after{content:'✓';position:absolute;top:10px;right:12px;width:20px;height:20px;border-radius:50%;background:var(--green);color:#000;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center}
+    .oi{font-size:28px;margin-bottom:10px}.on{font-size:13.5px;font-weight:700;margin-bottom:4px}.od{font-size:12px;color:var(--muted);line-height:1.5}
+    .ti-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:12px;display:flex;align-items:flex-start;gap:14px;cursor:pointer;transition:all .15s}
+    .ti-item:hover{border-color:var(--border2)}
+    .ti-item.open{border-color:rgba(0,230,118,.3)}
+    .ti-icon{width:40px;height:40px;border-radius:10px;background:rgba(0,230,118,.08);border:1px solid rgba(0,230,118,.2);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+    .ti-body{flex:1}
+    .ti-title{font-size:14px;font-weight:700;margin-bottom:2px}
+    .ti-sub{font-size:12.5px;color:var(--muted)}
+    .ti-content{display:none;margin-top:14px}
+    .ti-item.open .ti-content{display:block}
+    .ti-arr{color:var(--muted);font-size:18px;transition:transform .2s;flex-shrink:0;margin-top:4px}
+    .ti-item.open .ti-arr{transform:rotate(45deg)}
+    .dz{border:2px dashed var(--border);border-radius:10px;padding:28px;text-align:center;cursor:pointer;transition:all .2s}
+    .dz:hover,.dz.drag{border-color:var(--green);background:rgba(0,230,118,.03)}
+    .cw{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;height:580px}
+    .ch{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.02)}
+    .cav{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--green),#3b82f6);display:flex;align-items:center;justify-content:center;font-size:16px}
+    .cms{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px}
+    .bbl{max-width:82%;padding:10px 14px;border-radius:10px;font-size:13.5px;line-height:1.6;white-space:pre-wrap}
+    .bbl.user{background:var(--green);color:#000;font-weight:500;align-self:flex-end;border-radius:10px 10px 2px 10px;margin-left:auto}
+    .bbl.bot{background:var(--bg);border:1px solid var(--border);align-self:flex-start;border-radius:10px 10px 10px 2px}
+    .bbl.err{border-color:rgba(239,68,68,.3);color:var(--red)}
+    .cir{padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px}
+    .fqe{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:8px;display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:center}
+    .fqe input{margin:0;font-size:13px}
+    .sok{display:inline-flex;align-items:center;gap:5px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);color:var(--green);font-size:12px;font-weight:600;padding:3px 10px;border-radius:99px}
+    @media(max-width:800px){.og{grid-template-columns:1fr 1fr}.ia-tab span:not(.ti):not(.tb){display:none}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <main class="main" id="main" style="display:none">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px">
+      <div>
+        <h1 class="page-title">Agente IA</h1>
+        <p class="page-subtitle">Configure sua IA do zero em poucos passos.</p>
+      </div>
+      <span class="sok"><span style="width:6px;height:6px;border-radius:50%;background:var(--green)"></span> Groq · Llama 3.3 70B · Conectado</span>
+    </div>
+
+    <!-- TABS -->
+    <div class="ia-tabs">
+      <button class="ia-tab active" onclick="mudarTab('personalidade',this)"><span class="ti">🤖</span><span>Personalidade</span></button>
+      <button class="ia-tab" onclick="mudarTab('treinar',this)"><span class="ti">🧠</span><span>Treinar IA</span><span class="tb" id="badge-treino" style="display:none">0</span></button>
+      <button class="ia-tab" onclick="mudarTab('segmento',this)"><span class="ti">🏪</span><span>Segmento</span></button>
+      <button class="ia-tab" onclick="mudarTab('respostas',this)"><span class="ti">💬</span><span>Respostas Rápidas</span></button>
+      <button class="ia-tab" onclick="mudarTab('testar',this)"><span class="ti">🧪</span><span>Testar</span></button>
+    </div>
+
+    <!-- ── PAINEL 1: PERSONALIDADE ── -->
+    <div class="ia-panel active" id="panel-personalidade">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px">
+          <div style="font-size:14px;font-weight:700;margin-bottom:18px">🤖 Identidade do Agente</div>
+          <div class="form-group"><label>Nome do agente</label><input id="ag-nome" placeholder="Ex: Sofia, Max, Lara..." value="Sofia" oninput="syncNome()"/></div>
+          <div class="form-group"><label>Cargo / função</label><input id="ag-cargo" placeholder="Ex: Assistente de vendas, Atendente..."/></div>
+          <div class="form-group"><label>Nome da empresa</label><input id="ag-empresa" placeholder="Ex: BabyStore, Clínica Saúde+..."/></div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px">
+          <div style="font-size:14px;font-weight:700;margin-bottom:16px">🎭 Tom de comunicação</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div class="oc sel" onclick="selTom(this,'amigavel')"><div class="oi">😊</div><div class="on">Amigável</div><div class="od">Descontraído, usa emojis</div></div>
+            <div class="oc" onclick="selTom(this,'profissional')"><div class="oi">💼</div><div class="on">Profissional</div><div class="od">Formal e objetivo</div></div>
+            <div class="oc" onclick="selTom(this,'vendedor')"><div class="oi">🎯</div><div class="on">Vendedor</div><div class="od">Persuasivo, fecha vendas</div></div>
+            <div class="oc" onclick="selTom(this,'cuidadoso')"><div class="oi">🏥</div><div class="on">Cuidadoso</div><div class="od">Empático, saúde/clínica</div></div>
+          </div>
+          <input type="hidden" id="ag-tom" value="amigavel"/>
+        </div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;margin-top:20px">
+        <div style="font-size:14px;font-weight:700;margin-bottom:6px">📝 Instruções extras</div>
+        <div style="font-size:12.5px;color:var(--muted);margin-bottom:14px">Regras específicas: o que o agente deve e não deve fazer.</div>
+        <textarea id="ag-instrucoes" rows="4" placeholder="Ex: Sempre ofereça frete grátis para compras acima de R$150. Não mencione concorrentes. Se o cliente reclamar, ofereça desconto de 10%."></textarea>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-top:16px">
+        <button class="btn btn-primary" onclick="salvarConfig()">Salvar personalidade →</button>
+      </div>
+    </div>
+
+    <!-- ── PAINEL 2: TREINAR ── -->
+    <div class="ia-panel" id="panel-treinar">
+      <div style="font-size:13.5px;color:var(--muted);margin-bottom:20px">Escolha como quer treinar sua IA. Você pode usar vários métodos ao mesmo tempo.</div>
+
+      <div class="ti-item" id="ti-upload" onclick="togTreino('upload')">
+        <div class="ti-icon">📄</div>
+        <div class="ti-body">
+          <div class="ti-title">Upload de arquivos</div>
+          <div class="ti-sub">PDF, TXT — cardápio, tabela de preços, manual, FAQ</div>
+          <div class="ti-content" onclick="event.stopPropagation()">
+            <div class="dz" id="dz" onclick="document.getElementById('fi').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="this.classList.remove('drag');event.preventDefault();handleFiles(event.dataTransfer.files)">
+              <div style="font-size:32px;margin-bottom:10px">📂</div>
+              <div style="font-size:13.5px;font-weight:600;margin-bottom:4px">Clique ou arraste arquivos aqui</div>
+              <div style="font-size:12px;color:var(--muted)">PDF, TXT, MD, DOCX — máx. 5MB cada</div>
+              <input type="file" id="fi" multiple accept=".pdf,.txt,.md,.docx" style="display:none" onchange="handleFiles(this.files)"/>
+            </div>
+          </div>
+        </div>
+        <span class="ti-arr">+</span>
+      </div>
+
+      <div class="ti-item" id="ti-texto" onclick="togTreino('texto')">
+        <div class="ti-icon">✍️</div>
+        <div class="ti-body">
+          <div class="ti-title">Escrever diretamente</div>
+          <div class="ti-sub">Digite produtos, preços, serviços ou qualquer informação</div>
+          <div class="ti-content" onclick="event.stopPropagation()">
+            <div class="form-group" style="margin-bottom:8px"><label>Título</label><input id="txt-tit" placeholder="Ex: Tabela de preços, Cardápio..."/></div>
+            <div class="form-group"><label>Conteúdo</label><textarea id="txt-cont" rows="5" placeholder="Digite as informações que a IA deve conhecer..."></textarea></div>
+            <button class="btn btn-primary btn-sm" onclick="salvarTexto()">+ Adicionar à base</button>
+          </div>
+        </div>
+        <span class="ti-arr">+</span>
+      </div>
+
+      <div class="ti-item" id="ti-faq" onclick="togTreino('faq')">
+        <div class="ti-icon">❓</div>
+        <div class="ti-body">
+          <div class="ti-title">Perguntas & Respostas (FAQ)</div>
+          <div class="ti-sub">Crie pares de pergunta e resposta frequentes</div>
+          <div class="ti-content" onclick="event.stopPropagation()">
+            <div id="fq-lista">
+              <div class="fqe"><input placeholder="Pergunta: Ex: Qual o horário?"/><input placeholder="Resposta: Atendemos seg a sáb das 8h às 18h"/><button class="btn btn-danger btn-sm" onclick="this.closest('.fqe').remove()">✕</button></div>
+            </div>
+            <button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="addFaq()">+ Nova pergunta</button>
+            <button class="btn btn-primary btn-sm" style="margin-top:8px;margin-left:8px" onclick="salvarFaq()">Salvar FAQ</button>
+          </div>
+        </div>
+        <span class="ti-arr">+</span>
+      </div>
+
+      <div class="ti-item" id="ti-link" onclick="togTreino('link')">
+        <div class="ti-icon">🔗</div>
+        <div class="ti-body">
+          <div class="ti-title">Link do site / cardápio</div>
+          <div class="ti-sub">Cole uma URL para a IA referenciar nas respostas</div>
+          <div class="ti-content" onclick="event.stopPropagation()">
+            <div class="form-group"><label>URL</label><input id="lk-url" placeholder="https://..."/></div>
+            <div class="form-group"><label>Descrição</label><input id="lk-desc" placeholder="Ex: Cardápio digital, Site da empresa..."/></div>
+            <button class="btn btn-primary btn-sm" onclick="salvarLink()">Salvar link</button>
+          </div>
+        </div>
+        <span class="ti-arr">+</span>
+      </div>
+
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-top:8px">
+        <div style="font-size:13px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between">
+          <span>📚 Base atual</span>
+          <span id="cnt-base" style="font-size:12px;color:var(--muted)">0 itens</span>
+        </div>
+        <div id="base-lista"><div style="font-size:12.5px;color:var(--muted);text-align:center;padding:16px">Nenhum conteúdo ainda.</div></div>
+      </div>
+    </div>
+
+    <!-- ── PAINEL 3: SEGMENTO ── -->
+    <div class="ia-panel" id="panel-segmento">
+      <div style="font-size:13.5px;color:var(--muted);margin-bottom:20px">Escolha o tipo de negócio para carregar instruções prontas e otimizadas.</div>
+      <div class="og" style="grid-template-columns:repeat(3,1fr)">
+        <div class="oc" onclick="selSeg(this,'loja')"><div class="oi">🛍️</div><div class="on">Loja / E-commerce</div><div class="od">Produtos, preços, pedidos, delivery</div></div>
+        <div class="oc" onclick="selSeg(this,'clinica')"><div class="oi">🏥</div><div class="on">Clínica / Saúde</div><div class="od">Agendamentos, consultas, especialidades</div></div>
+        <div class="oc" onclick="selSeg(this,'restaurante')"><div class="oi">🍕</div><div class="on">Restaurante</div><div class="od">Cardápio, delivery, reservas, horários</div></div>
+        <div class="oc" onclick="selSeg(this,'servicos')"><div class="oi">⚙️</div><div class="on">Serviços</div><div class="od">Orçamentos, agendamentos, visitas</div></div>
+        <div class="oc" onclick="selSeg(this,'imoveis')"><div class="oi">🏠</div><div class="on">Imóveis</div><div class="od">Visitas, documentação, financiamento</div></div>
+        <div class="oc" onclick="selSeg(this,'educacao')"><div class="oi">📚</div><div class="on">Educação / Cursos</div><div class="od">Matrículas, conteúdos, suporte</div></div>
+        <div class="oc" onclick="selSeg(this,'beleza')"><div class="oi">💅</div><div class="on">Beleza / Estética</div><div class="od">Agendamentos, serviços, preços</div></div>
+        <div class="oc" onclick="selSeg(this,'financeiro')"><div class="oi">💰</div><div class="on">Financeiro / Seguros</div><div class="od">Simulações, propostas, documentação</div></div>
+        <div class="oc" onclick="selSeg(this,'personalizado')"><div class="oi">✨</div><div class="on">Personalizado</div><div class="od">Escreva suas próprias instruções</div></div>
+      </div>
+      <div id="seg-preview" style="display:none;background:var(--surface);border:1px solid rgba(0,230,118,.3);border-radius:12px;padding:20px;margin-top:4px">
+        <div style="font-size:13px;font-weight:700;color:var(--green);margin-bottom:10px">✓ Instruções selecionadas:</div>
+        <div id="seg-nome" style="font-size:14px;font-weight:600;margin-bottom:8px"></div>
+        <div id="seg-texto" style="font-size:12.5px;color:var(--muted);line-height:1.6;white-space:pre-wrap"></div>
+        <button class="btn btn-primary btn-sm" style="margin-top:14px" onclick="aplicarSeg()">Aplicar e salvar →</button>
+      </div>
+    </div>
+
+    <!-- ── PAINEL 4: RESPOSTAS RÁPIDAS ── -->
+    <div class="ia-panel" id="panel-respostas">
+      <div style="font-size:13.5px;color:var(--muted);margin-bottom:20px">Configure atalhos: quando o cliente usar certas palavras, a IA responde na hora — sem gastar tokens.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px">
+          <div style="font-size:13px;font-weight:700;margin-bottom:14px">⚡ Atalhos salvos</div>
+          <div id="atalhos-lista"><div style="font-size:12.5px;color:var(--muted);text-align:center;padding:16px">Nenhum atalho ainda.</div></div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px">
+          <div style="font-size:13px;font-weight:700;margin-bottom:14px">➕ Criar novo atalho</div>
+          <div class="form-group"><label>Quando o cliente disser...</label><input id="at-gat" placeholder="Ex: preço, quanto custa, valor"/></div>
+          <div class="form-group"><label>A IA responde automaticamente:</label><textarea id="at-res" rows="4" placeholder="Ex: Nossos preços começam a partir de R$50. Me diga o que precisa para um orçamento! 😊"></textarea></div>
+          <button class="btn btn-primary" style="width:100%" onclick="salvarAtalho()">+ Adicionar atalho</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PAINEL 5: TESTAR ── -->
+    <div class="ia-panel" id="panel-testar">
+      <div style="display:grid;grid-template-columns:260px 1fr;gap:20px;align-items:start">
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px">
+            <div style="font-size:13px;font-weight:700;margin-bottom:14px">📊 Resumo</div>
+            <div style="display:flex;flex-direction:column;gap:10px;font-size:13px">
+              <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Nome</span><span id="res-nome" style="font-weight:600">Sofia</span></div>
+              <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Tom</span><span id="res-tom" style="font-weight:600">Amigável</span></div>
+              <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Base</span><span id="res-base" style="font-weight:600">0 itens</span></div>
+              <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Atalhos</span><span id="res-atalhos" style="font-weight:600">0</span></div>
+            </div>
+          </div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px">
+            <div style="font-size:13px;font-weight:700;margin-bottom:12px">💡 Sugestões de teste</div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <button onclick="usarSug(this)" class="btn btn-ghost btn-sm" style="justify-content:flex-start;text-align:left">Olá, como você pode me ajudar?</button>
+              <button onclick="usarSug(this)" class="btn btn-ghost btn-sm" style="justify-content:flex-start;text-align:left">Quais os preços?</button>
+              <button onclick="usarSug(this)" class="btn btn-ghost btn-sm" style="justify-content:flex-start;text-align:left">Qual o horário de atendimento?</button>
+              <button onclick="usarSug(this)" class="btn btn-ghost btn-sm" style="justify-content:flex-start;text-align:left">Vocês fazem entrega?</button>
+            </div>
+          </div>
+          <button class="btn btn-ghost" onclick="baixarConfig()">⬇️ Baixar configuração</button>
+        </div>
+        <div class="cw">
+          <div class="ch">
+            <div class="cav">🤖</div>
+            <div>
+              <div style="font-size:14px;font-weight:600" id="chat-agent-nome">Sofia</div>
+              <div style="font-size:12px;color:var(--green);display:flex;align-items:center;gap:4px"><span style="width:5px;height:5px;border-radius:50%;background:var(--green)"></span>Online · Groq llama-3.3-70b</div>
+            </div>
+            <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="limparChat()">Limpar</button>
+          </div>
+          <div id="chat-msgs" class="cms">
+            <div data-init style="text-align:center;padding:48px 16px">
+              <div style="font-size:40px;margin-bottom:12px">🤖</div>
+              <div style="font-size:14px;font-weight:600;margin-bottom:6px">Pronto para testar!</div>
+              <div style="font-size:13px;color:var(--muted)">Converse com sua IA e veja como ela responde seus clientes.</div>
+            </div>
+          </div>
+          <div class="cir">
+            <input id="chat-input" placeholder="Digite uma mensagem para testar..." style="flex:1" onkeydown="if(event.key==='Enter'&&!event.shiftKey)enviarMsg()"/>
+            <button class="btn btn-primary" onclick="enviarMsg()" id="btn-send">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/supabase-config.js"></script>
+<script src="../js/config.js"></script>
+<script src="../js/utils.js"></script>
+<script src="../js/sidebar.js"></script>
+<script>
+renderSidebar('ia')
+let userId=null, historicoChat=[], atalhos=[], segAtual=null
+
+const TOMS={
+  amigavel:'Seja amigável e descontraído. Use emojis com moderação. Linguagem calorosa e próxima.',
+  profissional:'Seja formal e objetivo. Sem emojis. Linguagem corporativa e precisa.',
+  vendedor:'Seja persuasivo. Destaque benefícios, crie urgência. Foque em fechar a venda.',
+  cuidadoso:'Seja empático e tranquilizador. Nunca dê diagnósticos. Oriente a buscar um profissional.'
+}
+const SEGS={
+  loja:{n:'🛍️ Loja / E-commerce',t:'Você atende uma loja. Ajude clientes com produtos, preços, prazos de entrega e pagamento. Sempre facilite a compra e ofereça opções.'},
+  clinica:{n:'🏥 Clínica / Saúde',t:'Você atende uma clínica. Ajude com agendamentos e informações sobre especialidades. Seja acolhedor. Nunca dê diagnósticos.'},
+  restaurante:{n:'🍕 Restaurante',t:'Você atende um restaurante. Informe cardápio, preços, horários, delivery e reservas. Use emojis de comida para deixar as respostas mais apetitosas.'},
+  servicos:{n:'⚙️ Serviços',t:'Você atende uma empresa de serviços. Colete dados para orçamentos, agende visitas e esclareça dúvidas sobre os serviços oferecidos.'},
+  imoveis:{n:'🏠 Imóveis',t:'Você atende uma imobiliária. Ajude clientes a encontrar imóveis, agendar visitas e entender compra, venda ou aluguel. Seja consultivo.'},
+  educacao:{n:'📚 Educação / Cursos',t:'Você atende uma instituição de ensino. Ajude com informações sobre cursos, matrículas, valores e conteúdo programático.'},
+  beleza:{n:'💅 Beleza / Estética',t:'Você atende um salão ou clínica estética. Ajude a agendar horários, tire dúvidas sobre procedimentos e informe preços.'},
+  financeiro:{n:'💰 Financeiro / Seguros',t:'Você atende empresa financeira. Ajude com simulações, tire dúvidas e colete dados para proposta. Reforce segurança e transparência.'},
+  personalizado:{n:'✨ Personalizado',t:''}
+}
+
+async function init(){
+  const user=await protegerPagina(); if(!user)return
+  userId=user.id; await carregarSidebar()
+  document.getElementById('main').style.display=''
+  await Promise.all([carregarConfig(),carregarBase(),carregarAtalhos()])
+  renderAtalhos(); atualizarResumo()
+}
+
+function mudarTab(n,btn){
+  document.querySelectorAll('.ia-panel').forEach(p=>p.classList.remove('active'))
+  document.querySelectorAll('.ia-tab').forEach(t=>t.classList.remove('active'))
+  document.getElementById('panel-'+n).classList.add('active'); btn.classList.add('active')
+  if(n==='testar')atualizarResumo()
+}
+
+// PERSONALIDADE
+function selTom(card,tom){
+  document.querySelectorAll('#panel-personalidade .oc').forEach(c=>c.classList.remove('sel'))
+  card.classList.add('sel'); document.getElementById('ag-tom').value=tom
+}
+function syncNome(){const n=document.getElementById('ag-nome').value.trim()||'Sofia';document.getElementById('chat-agent-nome').textContent=n;document.getElementById('res-nome').textContent=n}
+async function salvarConfig(){
+  const c={nome:document.getElementById('ag-nome').value.trim()||'Sofia',cargo:document.getElementById('ag-cargo').value.trim(),empresa:document.getElementById('ag-empresa').value.trim(),tom:document.getElementById('ag-tom').value,instrucoes:document.getElementById('ag-instrucoes').value.trim()}
+  const{data:ex}=await _sb.from('agente_config').select('id').eq('user_id',userId).single()
+  if(ex){await _sb.from('agente_config').update(c).eq('user_id',userId)}else{await _sb.from('agente_config').insert({user_id:userId,...c})}
+  syncNome(); toast('Personalidade salva! ✓')
+}
+async function carregarConfig(){
+  const{data}=await _sb.from('agente_config').select('*').eq('user_id',userId).single()
+  if(!data)return
+  if(data.nome)document.getElementById('ag-nome').value=data.nome
+  if(data.cargo)document.getElementById('ag-cargo').value=data.cargo
+  if(data.empresa)document.getElementById('ag-empresa').value=data.empresa
+  if(data.instrucoes)document.getElementById('ag-instrucoes').value=data.instrucoes
+  if(data.tom){
+    document.getElementById('ag-tom').value=data.tom
+    const m={amigavel:0,profissional:1,vendedor:2,cuidadoso:3}
+    const cards=document.querySelectorAll('#panel-personalidade .oc')
+    cards.forEach(c=>c.classList.remove('sel'))
+    if(cards[m[data.tom]])cards[m[data.tom]].classList.add('sel')
+  }
+  try{atalhos=JSON.parse(data.atalhos||'[]')}catch{atalhos=[]}
+  syncNome()
+}
+
+// TREINAR
+function togTreino(t){
+  const item=document.getElementById('ti-'+t),was=item.classList.contains('open')
+  document.querySelectorAll('.ti-item').forEach(i=>i.classList.remove('open'))
+  if(!was)item.classList.add('open')
+}
+async function handleFiles(files){
+  for(const f of files){
+    if(f.size>5*1024*1024){toast(`${f.name} muito grande (máx 5MB).`,'error');continue}
+    const cont=await lerArq(f); if(!cont)continue
+    const{error}=await _sb.from('base_conhecimento').insert({user_id:userId,nome:f.name,conteudo:cont.slice(0,50000),tamanho:f.size,tipo:'arquivo'})
+    if(error){toast('Erro ao salvar.','error');continue}
+    toast(`✓ ${f.name} adicionado!`)
+  }
+  await carregarBase()
+}
+async function lerArq(file){
+  return new Promise(res=>{
+    const r=new FileReader()
+    if(file.type==='application/pdf'){
+      r.onload=()=>{const a=new Uint8Array(r.result);let t='';for(let i=0;i<a.length;i++){const c=a[i];if(c>=32&&c<127)t+=String.fromCharCode(c);else if(c===10||c===13)t+='\n'}
+      res(t.replace(/\s{3,}/g,' ').trim()||`[PDF: ${file.name}]`);};r.readAsArrayBuffer(file)
+    }else{r.onload=()=>res(r.result);r.onerror=()=>res(null);r.readAsText(file,'UTF-8')}
+  })
+}
+async function salvarTexto(){
+  const tit=document.getElementById('txt-tit').value.trim(),cont=document.getElementById('txt-cont').value.trim()
+  if(!tit||!cont)return toast('Preencha título e conteúdo.','error')
+  await _sb.from('base_conhecimento').insert({user_id:userId,nome:tit,conteudo:cont,tamanho:cont.length,tipo:'texto'})
+  document.getElementById('txt-tit').value='';document.getElementById('txt-cont').value='';toast('✓ Adicionado!');await carregarBase()
+}
+function addFaq(){const l=document.getElementById('fq-lista');const d=document.createElement('div');d.className='fqe';d.innerHTML='<input placeholder="Pergunta"/><input placeholder="Resposta"/><button class="btn btn-danger btn-sm" onclick="this.closest(\'.fqe\').remove()">✕</button>';l.appendChild(d)}
+async function salvarFaq(){
+  const pares=[];document.querySelectorAll('.fqe').forEach(e=>{const i=e.querySelectorAll('input');if(i[0].value.trim()&&i[1].value.trim())pares.push(`P: ${i[0].value.trim()}\nR: ${i[1].value.trim()}`)})
+  if(!pares.length)return toast('Adicione ao menos uma pergunta e resposta.','error')
+  const c=pares.join('\n\n')
+  await _sb.from('base_conhecimento').insert({user_id:userId,nome:'FAQ do negócio',conteudo:c,tamanho:c.length,tipo:'faq'})
+  toast('✓ FAQ salvo!');await carregarBase()
+}
+async function salvarLink(){
+  const url=document.getElementById('lk-url').value.trim(),desc=document.getElementById('lk-desc').value.trim()||'Link externo'
+  if(!url)return toast('Cole uma URL.','error')
+  const c=`Link: ${url}\nDescrição: ${desc}\n\nCompartilhe este link quando o cliente pedir mais informações: ${url}`
+  await _sb.from('base_conhecimento').insert({user_id:userId,nome:desc,conteudo:c,tamanho:c.length,tipo:'link'})
+  document.getElementById('lk-url').value='';document.getElementById('lk-desc').value='';toast('✓ Link salvo!');await carregarBase()
+}
+async function carregarBase(){
+  const{data}=await _sb.from('base_conhecimento').select('id,nome,tamanho,tipo,created_at').eq('user_id',userId).order('created_at',{ascending:false})
+  const items=data||[];const badge=document.getElementById('badge-treino')
+  badge.textContent=items.length;badge.style.display=items.length?'flex':'none'
+  document.getElementById('cnt-base').textContent=`${items.length} ${items.length===1?'item':'itens'}`
+  const ico={arquivo:'📄',texto:'✍️',faq:'❓',link:'🔗'}
+  const lista=document.getElementById('base-lista')
+  if(!items.length){lista.innerHTML='<div style="font-size:12.5px;color:var(--muted);text-align:center;padding:16px">Nenhum conteúdo ainda.</div>';return}
+  lista.innerHTML=items.map(i=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px"><span style="font-size:18px">${ico[i.tipo]||'📄'}</span><div style="flex:1;min-width:0"><div style="font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${i.nome}</div><div style="font-size:11px;color:var(--muted)">${i.tipo} · ${(i.tamanho/1024).toFixed(1)}KB · ${formatarData(i.created_at)}</div></div><button class="btn btn-danger btn-sm" style="padding:3px 8px;font-size:11px" onclick="delBase('${i.id}')">✕</button></div>`).join('')
+  atualizarResumo()
+}
+async function delBase(id){await _sb.from('base_conhecimento').delete().eq('id',id);toast('Removido.');await carregarBase()}
+
+// SEGMENTO
+function selSeg(card,seg){
+  document.querySelectorAll('#panel-segmento .oc').forEach(c=>c.classList.remove('sel'));card.classList.add('sel');segAtual=seg
+  const s=SEGS[seg];document.getElementById('seg-preview').style.display='block'
+  document.getElementById('seg-nome').textContent=s.n
+  document.getElementById('seg-texto').textContent=s.t||'Escreva suas instruções na aba Personalidade.'
+}
+async function aplicarSeg(){
+  if(!segAtual)return;const s=SEGS[segAtual]
+  if(s.t){document.getElementById('ag-instrucoes').value=s.t;await salvarConfig();toast(`✓ "${s.n}" aplicado!`)}
+  else{document.querySelectorAll('.ia-tab')[0].click();toast('Escreva suas instruções na aba Personalidade.')}
+}
+
+// RESPOSTAS RÁPIDAS
+async function carregarAtalhos(){const{data}=await _sb.from('agente_config').select('atalhos').eq('user_id',userId).single();try{atalhos=JSON.parse(data?.atalhos||'[]')}catch{atalhos=[]}}
+async function salvarAtalho(){
+  const g=document.getElementById('at-gat').value.trim(),r=document.getElementById('at-res').value.trim()
+  if(!g||!r)return toast('Preencha o gatilho e a resposta.','error')
+  atalhos.push({gatilho:g,resposta:r,id:Date.now()})
+  await _sb.from('agente_config').update({atalhos:JSON.stringify(atalhos)}).eq('user_id',userId)
+  document.getElementById('at-gat').value='';document.getElementById('at-res').value='';toast('✓ Atalho adicionado!');renderAtalhos()
+}
+async function delAtalho(id){atalhos=atalhos.filter(a=>a.id!==id);await _sb.from('agente_config').update({atalhos:JSON.stringify(atalhos)}).eq('user_id',userId);renderAtalhos()}
+function renderAtalhos(){
+  const l=document.getElementById('atalhos-lista');document.getElementById('res-atalhos').textContent=atalhos.length
+  if(!atalhos.length){l.innerHTML='<div style="font-size:12.5px;color:var(--muted);text-align:center;padding:16px">Nenhum atalho ainda.</div>';return}
+  l.innerHTML=atalhos.map(a=>`<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;display:flex;gap:10px;align-items:flex-start;margin-bottom:8px"><div style="flex:1;min-width:0"><div style="font-size:12px;color:var(--green);font-weight:700;margin-bottom:2px">Quando disser: "${a.gatilho}"</div><div style="font-size:12px;color:var(--muted);line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${a.resposta}</div></div><button class="btn btn-danger btn-sm" style="padding:3px 8px;font-size:11px;flex-shrink:0" onclick="delAtalho(${a.id})">✕</button></div>`).join('')
+}
+
+// CHAT
+async function enviarMsg(){
+  const inp=document.getElementById('chat-input'),msg=inp.value.trim();if(!msg)return
+  inp.value='';document.getElementById('btn-send').disabled=true
+  adBolha(msg,'user');historicoChat.push({role:'user',content:msg})
+  const tid='t'+Date.now();adBolha('...','bot',tid)
+  try{
+    const{data:docs}=await _sb.from('base_conhecimento').select('nome,conteudo').eq('user_id',userId)
+    const{data:cfg}=await _sb.from('agente_config').select('*').eq('user_id',userId).single()
+    const nome=cfg?.nome||'Sofia',cargo=cfg?.cargo||'assistente virtual',empresa=cfg?.empresa||''
+    const instrucoes=cfg?.instrucoes||'',tom=cfg?.tom||'amigavel'
+    // Verifica atalhos
+    const am=atalhos.find(a=>msg.toLowerCase().includes(a.gatilho.toLowerCase()))
+    if(am){document.getElementById(tid)?.remove();historicoChat.push({role:'assistant',content:am.resposta});adBolha(am.resposta,'bot');document.getElementById('btn-send').disabled=false;return}
+    let sys=`Você é ${nome}, ${cargo}${empresa?' da '+empresa:''}. ${TOMS[tom]||''}\n\nResponda sempre em português do Brasil. Seja direto e objetivo.\n\n${instrucoes}`
+    if(docs?.length){sys+='\n\n=== BASE DE CONHECIMENTO ===\n';docs.forEach(d=>{sys+=`\n[${d.nome}]\n${d.conteudo.slice(0,5000)}\n`});sys+='\n=== FIM ===\nUse as informações acima. Se não souber algo, diga que vai verificar.'}
+    const GKEY=window.ZS?.ia?.groq_key,MOD=window.ZS?.ia?.modelo||'llama-3.3-70b-versatile'
+    const resp=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${GKEY}`},body:JSON.stringify({model:MOD,messages:[{role:'system',content:sys},...historicoChat],max_tokens:600,temperature:0.7})})
+    const d=await resp.json();if(!resp.ok)throw new Error(d?.error?.message||`Erro ${resp.status}`)
+    const r=d.choices?.[0]?.message?.content||'Não consegui gerar uma resposta.'
+    historicoChat.push({role:'assistant',content:r});document.getElementById(tid)?.remove();adBolha(r,'bot')
+  }catch(e){document.getElementById(tid)?.remove();adBolha('⚠️ '+e.message,'bot',null,true)}
+  document.getElementById('btn-send').disabled=false;document.getElementById('chat-input').focus()
+}
+function adBolha(txt,tipo,id=null,err=false){
+  const msgs=document.getElementById('chat-msgs');msgs.querySelector('[data-init]')?.remove()
+  const d=document.createElement('div');if(id)d.id=id
+  d.className=`bbl ${tipo}${err?' err':''}`
+  if(tipo==='user'){d.textContent=txt}
+  else if(txt==='...'){
+    d.innerHTML='<span style="display:flex;gap:4px;height:20px;align-items:center"><span style="animation:tp .9s infinite 0s;font-size:18px">●</span><span style="animation:tp .9s infinite .15s;font-size:18px">●</span><span style="animation:tp .9s infinite .3s;font-size:18px">●</span></span>'
+    if(!document.getElementById('tps')){const s=document.createElement('style');s.id='tps';s.textContent='@keyframes tp{0%,100%{opacity:.25;transform:scale(.7)}50%{opacity:1;transform:scale(1);color:var(--green)}}';document.head.appendChild(s)}
+  }else{d.textContent=txt}
+  msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight
+}
+function usarSug(btn){document.getElementById('chat-input').value=btn.textContent.trim();enviarMsg()}
+function limparChat(){historicoChat=[];document.getElementById('chat-msgs').innerHTML='<div data-init style="text-align:center;padding:48px 16px"><div style="font-size:40px;margin-bottom:12px">🤖</div><div style="font-size:14px;font-weight:600">Chat limpo!</div></div>'}
+function atualizarResumo(){
+  const tl={amigavel:'Amigável',profissional:'Profissional',vendedor:'Vendedor',cuidadoso:'Cuidadoso'}
+  document.getElementById('res-nome').textContent=document.getElementById('ag-nome').value.trim()||'Sofia'
+  document.getElementById('res-tom').textContent=tl[document.getElementById('ag-tom').value]||'Amigável'
+  const b=document.getElementById('badge-treino');document.getElementById('res-base').textContent=b.style.display!=='none'?`${b.textContent} itens`:'0 itens'
+  document.getElementById('res-atalhos').textContent=atalhos.length
+}
+async function baixarConfig(){
+  const{data:cfg}=await _sb.from('agente_config').select('*').eq('user_id',userId).single()
+  const{data:docs}=await _sb.from('base_conhecimento').select('nome,conteudo').eq('user_id',userId)
+  const c={nome:cfg?.nome||'Sofia',tom:cfg?.tom||'amigavel',instrucoes:cfg?.instrucoes||'',atalhos,base_conhecimento:docs?.map(d=>({nome:d.nome,conteudo:d.conteudo}))||[],exportado_em:new Date().toISOString()}
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(c,null,2)],{type:'application/json'}));a.download=`agente-${c.nome.toLowerCase()}.json`;a.click();toast('Configuração baixada!')
+}
+
+init()
+</script>
+</body>
+</html>

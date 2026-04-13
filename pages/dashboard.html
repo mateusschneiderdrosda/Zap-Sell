@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ZapSell — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<div class="app">
+  <main class="main" id="main">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="topbar-title" id="saudacao">Dashboard</div>
+      <div class="topbar-search">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        Buscar leads, vendas...
+      </div>
+      <button class="topbar-btn" title="Notificações">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5S10.5 3.17 10.5 4v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+      </button>
+      <a href="/leads" class="btn btn-primary btn-sm">+ Novo lead</a>
+    </div>
+
+    <div class="page-content">
+
+      <!-- GREETING -->
+      <div class="page-header">
+        <div>
+          <div class="page-title" id="nome-user">Bom dia 👋</div>
+          <div class="page-subtitle">Aqui está um resumo das suas vendas de hoje</div>
+        </div>
+        <button class="btn btn-ghost btn-sm">Este mês ▾</button>
+      </div>
+
+      <!-- METRICS -->
+      <div class="metric-grid" id="metrics">
+        <div class="metric-card"><div class="metric-icon" style="background:rgba(59,130,246,.12);color:var(--blue)">◎</div><div class="metric-label">Leads Novos</div><div class="metric-value skeleton" style="width:60px;height:28px" id="card-novos"></div><div class="metric-change neutral skeleton" style="width:80px;height:14px;margin-top:6px" id="ch-novos"></div></div>
+        <div class="metric-card"><div class="metric-icon" style="background:rgba(245,158,11,.12);color:var(--yellow)">⟳</div><div class="metric-label">Em Contato</div><div class="metric-value skeleton" style="width:50px;height:28px" id="card-contato"></div><div class="metric-change neutral skeleton" style="width:70px;height:14px;margin-top:6px" id="ch-contato"></div></div>
+        <div class="metric-card"><div class="metric-icon" style="background:rgba(22,199,132,.12);color:var(--green)">✓</div><div class="metric-label">Convertidos</div><div class="metric-value skeleton" style="width:50px;height:28px" id="card-conv"></div><div class="metric-change skeleton" style="width:90px;height:14px;margin-top:6px" id="ch-conv"></div></div>
+        <div class="metric-card"><div class="metric-icon" style="background:rgba(139,92,246,.12);color:var(--purple)">$</div><div class="metric-label">Receita Total</div><div class="metric-value skeleton" style="width:90px;height:28px" id="card-receita"></div><div class="metric-change skeleton" style="width:90px;height:14px;margin-top:6px" id="ch-receita"></div></div>
+      </div>
+
+      <!-- CHARTS ROW -->
+      <div class="grid-3">
+        <div class="panel">
+          <div class="panel-title">Leads por dia <a href="/leads">Ver todos →</a></div>
+          <div class="chart-bars" id="chart-leads"></div>
+          <div style="display:flex;gap:14px;margin-top:10px">
+            <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)"><span style="width:8px;height:8px;background:var(--green);border-radius:2px;display:inline-block"></span>Convertidos</div>
+            <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)"><span style="width:8px;height:8px;background:var(--muted2);border-radius:2px;display:inline-block"></span>Total</div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">Funil de vendas</div>
+          <div id="funil">
+            <div class="funnel-step"><div class="funnel-label">Novos</div><div class="funnel-track"><div class="funnel-fill" style="width:100%;background:var(--blue)" id="f1">—</div></div><div class="funnel-pct" id="fp1">—</div></div>
+            <div class="funnel-step"><div class="funnel-label">Contato</div><div class="funnel-track"><div class="funnel-fill" style="width:0%;background:var(--yellow)" id="f2">—</div></div><div class="funnel-pct" id="fp2">—</div></div>
+            <div class="funnel-step"><div class="funnel-label">Proposta</div><div class="funnel-track"><div class="funnel-fill" style="width:0%;background:var(--purple)" id="f3">—</div></div><div class="funnel-pct" id="fp3">—</div></div>
+            <div class="funnel-step"><div class="funnel-label">Fechado</div><div class="funnel-track"><div class="funnel-fill" style="width:0%;background:var(--green)" id="f4">—</div></div><div class="funnel-pct" id="fp4">—</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RECENTS -->
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-title">Leads recentes <a href="/leads">Ver todos →</a></div>
+          <div id="leads-recentes"><div style="display:flex;flex-direction:column;gap:8px"><div class="skeleton" style="height:40px;border-radius:8px"></div><div class="skeleton" style="height:40px;border-radius:8px"></div><div class="skeleton" style="height:40px;border-radius:8px"></div></div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">Últimas vendas <a href="/vendas">Ver todas →</a></div>
+          <div id="vendas-recentes"><div style="display:flex;flex-direction:column;gap:8px"><div class="skeleton" style="height:40px;border-radius:8px"></div><div class="skeleton" style="height:40px;border-radius:8px"></div><div class="skeleton" style="height:40px;border-radius:8px"></div></div></div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="../js/supabase-config.js"></script>
+<script src="../js/utils.js"></script>
+<script src="../js/sidebar.js"></script>
+<script>
+renderSidebar('dashboard')
+
+const CORES = ['#4FC', '#8B5', '#FA0', '#F44', '#83F']
+function cor(i) { return ['rgba(22,199,132,.15)','rgba(139,92,246,.15)','rgba(245,158,11,.15)','rgba(240,68,68,.15)','rgba(59,130,246,.15)'][i%5] }
+function tc(i)  { return ['var(--green)','var(--purple)','var(--yellow)','var(--red)','var(--blue)'][i%5] }
+
+async function init() {
+  const user = await protegerPagina()
+  if (!user) return
+
+  // Carrega tudo em paralelo — mais rápido!
+  const [leads, vendas, perfil] = await Promise.all([
+    _sb.from('leads').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
+    _sb.from('vendas').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
+    _sb.from('profiles').select('nome,email').eq('id', user.id).single()
+  ])
+
+  const l = leads.data || []
+  const v = vendas.data || []
+  const p = perfil.data
+
+  // Greeting
+  const h = new Date().getHours()
+  const grt = h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite'
+  const nome = p?.nome || p?.email?.split('@')[0] || ''
+  document.getElementById('nome-user').textContent = `${grt}, ${nome} 👋`
+  document.getElementById('saudacao').textContent = 'Dashboard'
+
+  // Métricas
+  const novos = l.filter(x=>x.status==='novo').length
+  const contato = l.filter(x=>x.status==='em_contato').length
+  const conv = l.filter(x=>x.status==='convertido').length
+  const receita = v.filter(x=>x.status==='pago').reduce((s,x)=>s+Number(x.valor),0)
+
+  function setMetric(id, val, chId, pct, up) {
+    const el = document.getElementById(id)
+    el.className = 'metric-value'
+    el.textContent = val
+    const ch = document.getElementById(chId)
+    if (ch) {
+      ch.className = `metric-change ${up ? 'up' : 'neutral'}`
+      ch.textContent = pct
+    }
+  }
+
+  setMetric('card-novos', novos, 'ch-novos', `${novos} aguardando`, false)
+  setMetric('card-contato', contato, 'ch-contato', `${contato} em andamento`, false)
+  setMetric('card-conv', conv, 'ch-conv', `${l.length > 0 ? Math.round(conv/l.length*100) : 0}% de conversão`, true)
+  setMetric('card-receita', formatarMoeda(receita), 'ch-receita', `${v.filter(x=>x.status==='pago').length} vendas pagas`, true)
+
+  // Funil
+  const total = l.length || 1
+  function setFunil(fid, fpid, n, color) {
+    const pct = Math.round(n/total*100)
+    document.getElementById(fid).style.width = pct+'%'
+    document.getElementById(fid).textContent = n > 0 ? n : ''
+    document.getElementById(fpid).textContent = pct+'%'
+  }
+  setFunil('f1','fp1', novos, 'var(--blue)')
+  setFunil('f2','fp2', contato, 'var(--yellow)')
+  setFunil('f3','fp3', l.filter(x=>x.status==='em_contato').length, 'var(--purple)')
+  setFunil('f4','fp4', conv, 'var(--green)')
+
+  // Chart leads (últimos 7 dias)
+  const chart = document.getElementById('chart-leads')
+  chart.innerHTML = ''
+  const dias = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb']
+  const hoje = new Date()
+  const totals = Array(7).fill(0), convs = Array(7).fill(0)
+  l.forEach(lead => {
+    const d = new Date(lead.created_at)
+    const diff = Math.floor((hoje - d) / 86400000)
+    if (diff < 7) { totals[6-diff]++; if (lead.status==='convertido') convs[6-diff]++ }
+  })
+  const maxT = Math.max(...totals, 1)
+  for (let i = 0; i < 7; i++) {
+    const col = document.createElement('div')
+    col.className = 'bar-col'
+    col.innerHTML = `
+      <div class="bar-fill" style="height:${Math.round(convs[i]/maxT*72)}px;background:var(--green)" title="${convs[i]} conv."></div>
+      <div class="bar-fill" style="height:${Math.round(totals[i]/maxT*72)}px;background:var(--muted2)" title="${totals[i]} total"></div>
+      <div class="bar-lbl">${dias[(hoje.getDay()-6+i+7)%7]}</div>`
+    chart.appendChild(col)
+  }
+
+  // Leads recentes
+  const lr = document.getElementById('leads-recentes')
+  if (!l.length) { lr.innerHTML = '<div style="text-align:center;padding:20px;font-size:12.5px;color:var(--muted)">Nenhum lead ainda.<br><a href="/leads" style="color:var(--green)">Adicionar primeiro lead →</a></div>'; }
+  else lr.innerHTML = l.slice(0,5).map((x,i) => `
+    <div class="conv-item">
+      <div class="av" style="background:${cor(i)};color:${tc(i)}">${(x.nome||'?')[0].toUpperCase()}</div>
+      <div class="conv-info"><div class="conv-name">${x.nome}</div><div class="conv-msg">${x.telefone||x.email||'sem contato'}</div></div>
+      <div class="conv-meta"><div class="conv-time">${formatarData(x.created_at)}</div>${statusTag(x.status)}</div>
+    </div>`).join('')
+
+  // Vendas recentes
+  const vr = document.getElementById('vendas-recentes')
+  if (!v.length) { vr.innerHTML = '<div style="text-align:center;padding:20px;font-size:12.5px;color:var(--muted)">Nenhuma venda ainda.</div>'; }
+  else vr.innerHTML = v.slice(0,5).map((x,i) => `
+    <div class="conv-item">
+      <div class="av" style="background:${cor(i)};color:${tc(i)}">${(x.descricao||'V')[0].toUpperCase()}</div>
+      <div class="conv-info"><div class="conv-name">${x.descricao||'Venda'}</div><div class="conv-msg">${formatarMoeda(x.valor)}</div></div>
+      <div class="conv-meta"><div class="conv-time">${formatarData(x.created_at)}</div>${statusTag(x.status)}</div>
+    </div>`).join('')
+
+  // Carrega nome na sidebar
+  const ini = (p?.nome||p?.email||'?')[0].toUpperCase()
+  const av = document.getElementById('avatar')
+  const sn = document.getElementById('sidebar-nome')
+  const se = document.getElementById('sidebar-email')
+  if (av) av.textContent = ini
+  if (sn) sn.textContent = p?.nome || p?.email?.split('@')[0]
+  if (se) se.textContent = p?.email || ''
+
+  esconderLoader()
+}
+
+init().catch(e => { console.error(e); esconderLoader() })
+</script>
+</body>
+</html>

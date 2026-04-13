@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>ZapSell — Entrar</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#080b10;--bg2:#0d1117;--bg3:#131920;--border:#ffffff0d;--border2:#ffffff18;--text:#eef2f8;--text2:#7a8fa8;--text3:#3a4a5c;--green:#00e5a0;--green2:#00b87e;--greenbg:#00e5a012;--red:#ff5c5c;--radius:10px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;position:relative;overflow:hidden}
+body::before{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-50%);width:700px;height:600px;background:radial-gradient(ellipse,rgba(0,229,160,.06),transparent 65%);pointer-events:none;z-index:0}
+.wrap{width:100%;max-width:420px;position:relative;z-index:1}
+.top-back{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--text2);text-decoration:none;margin-bottom:22px;transition:color .15s}
+.top-back:hover{color:var(--green)}
+.card{background:var(--bg2);border:1px solid var(--border2);border-radius:18px;padding:34px 30px;box-shadow:0 0 60px rgba(0,0,0,.4)}
+.logo{display:flex;align-items:center;gap:10px;margin-bottom:22px}
+.logo-icon{width:36px;height:36px;background:var(--green);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo-icon svg{width:19px;height:19px;fill:none;stroke:#000;stroke-width:2.5}
+.logo-text{font-family:'Syne',sans-serif;font-size:19px;font-weight:800}
+.logo-text span{color:var(--green)}
+.tagline{font-size:14px;color:var(--text2);margin-bottom:18px;line-height:1.5}
+.badge-strip{display:inline-flex;align-items:center;gap:6px;background:var(--greenbg);border:1px solid rgba(0,229,160,.18);border-radius:99px;padding:5px 14px;font-size:11px;color:var(--green);font-family:'DM Mono',monospace;margin-bottom:22px}
+.badge-strip::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--green);animation:p 2s infinite}
+@keyframes p{0%,100%{opacity:1}50%{opacity:.3}}
+.tabs{display:flex;background:var(--bg3);border-radius:9px;padding:4px;gap:4px;margin-bottom:22px}
+.tab{flex:1;text-align:center;padding:8px;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;color:var(--text2);transition:all .15s}
+.tab.on{background:var(--bg2);color:var(--text);border:1px solid var(--border2)}
+.fg{margin-bottom:14px}
+.fg label{display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:5px}
+.fg input{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);padding:11px 13px;font-size:14px;color:var(--text);outline:none;transition:border-color .15s;font-family:'DM Sans',sans-serif}
+.fg input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(0,229,160,.08)}
+.fg input::placeholder{color:var(--text3)}
+.auth-btn{width:100%;padding:12px;background:var(--green);color:#000;border:none;border-radius:var(--radius);font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;margin-top:4px;display:flex;align-items:center;justify-content:center;gap:8px}
+.auth-btn:hover:not(:disabled){background:var(--green2);transform:translateY(-1px)}
+.auth-btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
+.spin{width:14px;height:14px;border:2px solid rgba(0,0,0,.25);border-top-color:#000;border-radius:50%;animation:spin .7s linear infinite;display:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.err{background:rgba(255,92,92,.1);border:1px solid rgba(255,92,92,.2);color:var(--red);border-radius:8px;padding:9px 13px;font-size:13px;margin-top:10px;display:none}
+.ok-msg{background:rgba(0,229,160,.1);border:1px solid rgba(0,229,160,.2);color:var(--green);border-radius:8px;padding:9px 13px;font-size:13px;margin-top:10px;display:none}
+.divider{height:1px;background:var(--border);margin:18px 0}
+.features-side{display:flex;flex-direction:column;gap:9px}
+.fs-item{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text2)}
+.fs-icon{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px}
+.footer-note{text-align:center;font-size:12px;color:var(--text3);margin-top:18px}
+.footer-note a{color:var(--green);text-decoration:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="/landing" class="top-back">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15,18 9,12 15,6"/></svg>
+    Voltar para o site
+  </a>
+  <div class="card">
+    <div class="logo">
+      <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+      <span class="logo-text">Zap<span>Sell</span></span>
+    </div>
+    <p class="tagline">Agente de IA para seu WhatsApp.<br>Venda enquanto dorme.</p>
+    <div class="badge-strip">IA com Claude · WhatsApp · CRM</div>
+    <div class="tabs">
+      <div class="tab on" id="t-login" onclick="tab('login')">Entrar</div>
+      <div class="tab" id="t-cad" onclick="tab('cad')">Criar conta</div>
+    </div>
+
+    <div id="form-login">
+      <div class="fg"><label>E-mail</label><input id="l-email" type="email" placeholder="seu@email.com" autocomplete="email"/></div>
+      <div class="fg"><label>Senha</label><input id="l-senha" type="password" placeholder="••••••••" autocomplete="current-password"/></div>
+      <button class="auth-btn" id="btn-login" onclick="login()"><span id="btn-login-txt">Entrar na minha conta</span><div class="spin" id="spin-login"></div></button>
+      <div class="err" id="err-login"></div>
+    </div>
+
+    <div id="form-cad" style="display:none">
+      <div class="fg"><label>Seu nome</label><input id="c-nome" type="text" placeholder="João Silva"/></div>
+      <div class="fg"><label>E-mail</label><input id="c-email" type="email" placeholder="seu@email.com"/></div>
+      <div class="fg"><label>Senha</label><input id="c-senha" type="password" placeholder="Mínimo 6 caracteres"/></div>
+      <button class="auth-btn" id="btn-cad" onclick="cadastro()"><span id="btn-cad-txt">Criar conta grátis →</span><div class="spin" id="spin-cad"></div></button>
+      <div class="err" id="err-cad"></div>
+      <div class="ok-msg" id="ok-cad"></div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="features-side">
+      <div class="fs-item"><div class="fs-icon" style="background:rgba(0,229,160,.1)">🤖</div>Agente IA que responde no WhatsApp 24/7</div>
+      <div class="fs-item"><div class="fs-icon" style="background:rgba(79,157,255,.1)">📊</div>CRM com funil de vendas completo</div>
+      <div class="fs-item"><div class="fs-icon" style="background:rgba(167,139,250,.1)">🔗</div>Integra com Cakto, Kiwify, UTMify</div>
+    </div>
+    <div class="footer-note">Ao continuar, você concorda com os <a href="#">Termos de Uso</a>.</div>
+  </div>
+</div>
+
+<script>
+// Carrega Supabase de forma não-bloqueante (resolve o lentidão!)
+(function(){
+  var s=document.createElement('script')
+  s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js'
+  s.onload=function(){
+    var c=document.createElement('script');c.src='js/supabase-config.js'
+    c.onload=function(){
+      if(window._sb){
+        _sb.auth.getSession().then(({data:{session}})=>{
+          if(session) window.location.replace('/dashboard')
+        })
+      }
+    }
+    document.head.appendChild(c)
+  }
+  document.head.appendChild(s)
+})()
+
+function tab(t){
+  document.getElementById('form-login').style.display=t==='login'?'block':'none'
+  document.getElementById('form-cad').style.display=t==='cad'?'block':'none'
+  document.getElementById('t-login').classList.toggle('on',t==='login')
+  document.getElementById('t-cad').classList.toggle('on',t==='cad')
+}
+function showErr(id,msg){const e=document.getElementById(id);e.textContent=msg;e.style.display=msg?'block':'none'}
+function showOk(id,msg){const e=document.getElementById(id);e.textContent=msg;e.style.display=msg?'block':'none'}
+function setLoad(btn,spin,txt,on,label){
+  document.getElementById(btn).disabled=on
+  document.getElementById(spin).style.display=on?'block':'none'
+  document.getElementById(txt).textContent=on?'Aguarde...':label
+}
+
+async function login(){
+  showErr('err-login','')
+  const email=document.getElementById('l-email').value.trim()
+  const senha=document.getElementById('l-senha').value
+  if(!email||!senha)return showErr('err-login','Preencha e-mail e senha.')
+  if(!window._sb)return showErr('err-login','Conexão não pronta, aguarde um segundo.')
+  setLoad('btn-login','spin-login','btn-login-txt',true)
+  const {error}=await _sb.auth.signInWithPassword({email,password:senha})
+  if(error){
+    const m={'Invalid login credentials':'E-mail ou senha incorretos.','Email not confirmed':'Confirme seu e-mail primeiro.'}
+    showErr('err-login',m[error.message]||error.message)
+    setLoad('btn-login','spin-login','btn-login-txt',false,'Entrar na minha conta')
+  } else {
+    document.getElementById('btn-login-txt').textContent='✓ Entrando...'
+    window.location.replace('/dashboard')
+  }
+}
+
+async function cadastro(){
+  showErr('err-cad','');showOk('ok-cad','')
+  const nome=document.getElementById('c-nome').value.trim()
+  const email=document.getElementById('c-email').value.trim()
+  const senha=document.getElementById('c-senha').value
+  if(!nome||!email||!senha)return showErr('err-cad','Preencha todos os campos.')
+  if(senha.length<6)return showErr('err-cad','Senha: mínimo 6 caracteres.')
+  if(!window._sb)return showErr('err-cad','Conexão não pronta, aguarde um segundo.')
+  setLoad('btn-cad','spin-cad','btn-cad-txt',true)
+  const {error}=await _sb.auth.signUp({email,password:senha,options:{data:{nome}}})
+  if(error){
+    showErr('err-cad',error.message)
+    setLoad('btn-cad','spin-cad','btn-cad-txt',false,'Criar conta grátis →')
+  } else {
+    const {error:le}=await _sb.auth.signInWithPassword({email,password:senha})
+    if(!le){document.getElementById('btn-cad-txt').textContent='✓ Conta criada!';window.location.replace('/dashboard')}
+    else{showOk('ok-cad','✓ Conta criada! Verifique seu e-mail para ativar.');setLoad('btn-cad','spin-cad','btn-cad-txt',false,'Criar conta grátis →')}
+  }
+}
+document.addEventListener('keydown',e=>{if(e.key==='Enter'){document.getElementById('t-login').classList.contains('on')?login():cadastro()}})
+</script>
+</body>
+</html>
